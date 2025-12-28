@@ -3,9 +3,9 @@ Módulo Analyzer Principal
 Orquesta todo el análisis de InterOrdra
 """
 
-from embeddings import SemanticEmbedder
-from clustering import ConceptClusterer
-from gap_detector import GapDetector
+from backend.embeddings import SemanticEmbedder
+from backend.clustering import ConceptClusterer
+from backend.gap_detector import GapDetector
 import numpy as np
 from typing import Dict
 
