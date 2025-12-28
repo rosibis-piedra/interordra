@@ -35,11 +35,19 @@ class GapDetector:
         
         # Cargar spaCy para análisis de vocabulario
         if language == 'es':
-            self.nlp = spacy.load('es_core_news_sm')
-        else:
-            self.nlp = spacy.load('en_core_web_sm')
-    
-    def detect_gaps(self, text_a_data: Dict, text_b_data: Dict) -> Dict:
+    try:
+        self.nlp = spacy.load('es_core_news_sm')
+    except:
+        import subprocess
+        subprocess.run(["python", "-m", "spacy", "download", "es_core_news_sm"])
+        self.nlp = spacy.load('es_core_news_sm')
+else:
+    try:
+        self.nlp = spacy.load('en_core_web_sm')
+    except:
+        import subprocess
+        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+        self.nlp = spacy.load('en_core_web_sm')
         """
         Encuentra desacoplamientos entre dos textos.
         
