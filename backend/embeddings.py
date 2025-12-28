@@ -35,11 +35,11 @@ class SemanticEmbedder:
         
         if language == 'es':
             try:
-                self.nlp = spacy.load('es_core_news_sm')
+                self.nlp = spacy.load('es-core-news-sm')
             except:
                 import subprocess
                 subprocess.run(["python", "-m", "spacy", "download", "es_core_news_sm"])
-                self.nlp = spacy.load('es_core_news_sm')
+                self.nlp = spacy.load('es-core-news-sm')
         else:
             try:
                 self.nlp = spacy.load('en_core_web_sm')
