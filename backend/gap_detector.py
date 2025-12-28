@@ -7,7 +7,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from typing import Dict, List
 from backend.simple_splitter import extract_keywords
-from typing import Dict, List, Tuple
 
 class GapDetector:
     """
@@ -30,18 +29,8 @@ class GapDetector:
         """
         self.threshold = threshold
         self.language = language
-        
-        # Cargar spaCy para análisis de vocabulario
-        if language == 'es':
-            import es_core_news_sm
-            self.nlp = es_core_news_sm.load()
-        else:
-            import en_core_web_sm
-            self.nlp = en_core_web_sm.load()
-
-        import subprocess
-        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-        self.nlp = spacy.load('en_core_web_sm')
+    
+    def detect_gaps(self, text_a_data: Dict, text_b_data: Dict) -> Dict:
         """
         Encuentra desacoplamientos entre dos textos.
         
@@ -50,11 +39,7 @@ class GapDetector:
             text_b_data: Output de SemanticEmbedder.embed_text() para texto B
         
         Returns:
-            Dict con análisis completo de gaps:
-                - global_similarity: Similaridad global (0-1)
-                - is_coupled: Bool indicando si están acoplados
-                - gaps: Info detallada de desacoplamientos
-                - vocabulary_analysis: Análisis de vocabulario
+            Dict con análisis completo de gaps
         """
         results = {}
         
@@ -120,16 +105,6 @@ class GapDetector:
     def _analyze_vocabulary(self, text_a_data: Dict, text_b_data: Dict) -> Dict:
         """
         Detecta palabras técnicas/únicas en cada texto.
-        
-        Args:
-            text_a_data, text_b_data: Datos de embeddings
-        
-        Returns:
-            Dict con análisis de vocabulario
-        """
-        def _analyze_vocabulary(self, text_a_data: Dict, text_b_data: Dict) -> Dict:
-        """
-        Detecta palabras técnicas/únicas en cada texto.
         """
         # Extraer keywords de ambos textos
         text_a_full = ' '.join(text_a_data['sentences'])
@@ -154,41 +129,9 @@ class GapDetector:
             'total_keywords_a': len(keywords_a),
             'total_keywords_b': len(keywords_b)
         }
-        
-        # Extraer keywords de ambos textos
-        text_a_full = ' '.join(text_a_data['sentences'])
-        text_b_full = ' '.join(text_b_data['sentences'])
-        
-        keywords_a = extract_keywords(text_a_full)
-        keywords_b = extract_keywords(text_b_full)
-        
-        # Calcular overlap
-        shared = keywords_a & keywords_b
-        unique_a = keywords_a - keywords_b
-        unique_b = keywords_b - keywords_a
-        
-        total_unique = len(keywords_a | keywords_b)
-        overlap_ratio = len(shared) / total_unique if total_unique > 0 else 0
-        
-        return {
-            'unique_to_a': sorted(list(unique_a))[:20],  # Top 20
-            'unique_to_b': sorted(list(unique_b))[:20],
-            'shared': sorted(list(shared))[:20],
-            'vocabulary_overlap': float(overlap_ratio),
-            'total_keywords_a': len(keywords_a),
-            'total_keywords_b': len(keywords_b)
-        }
     
     def _generate_recommendations(self, results: Dict) -> List[Dict]:
-        """
-        Genera recomendaciones para cerrar los gaps detectados.
-        
-        Args:
-            results: Resultados del análisis
-        
-        Returns:
-            Lista de recomendaciones con severidad
-        """
+        """Genera recomendaciones para cerrar los gaps detectados."""
         recommendations = []
         
         sim = results['global_similarity']
@@ -196,36 +139,34 @@ class GapDetector:
         orphans_b = results['gaps']['orphan_count_b']
         vocab_overlap = results['vocabulary_analysis']['vocabulary_overlap']
         
-        # Recomendación según similaridad global
         if sim < 0.3:
             recommendations.append({
                 'severity': 'high',
                 'category': 'global_coupling',
                 'message': 'Desacoplamiento severo: los textos tratan temas muy diferentes',
-                'suggestion': 'Considerar si están dirigidos a la misma audiencia o propósito. Puede ser necesario reestructurar completamente uno de los textos.'
+                'suggestion': 'Considerar si están dirigidos a la misma audiencia o propósito.'
             })
         elif sim < 0.5:
             recommendations.append({
                 'severity': 'medium',
                 'category': 'global_coupling',
                 'message': 'Desacoplamiento moderado: hay overlap pero también brechas significativas',
-                'suggestion': 'Identificar conceptos clave compartidos y expandir desde ahí. Agregar puentes conceptuales explícitos.'
+                'suggestion': 'Identificar conceptos clave compartidos y expandir desde ahí.'
             })
         else:
             recommendations.append({
                 'severity': 'low',
                 'category': 'global_coupling',
                 'message': 'Acoplamiento aceptable: los textos están razonablemente alineados',
-                'suggestion': 'Enfocarse en refinar detalles específicos mencionados en gaps.'
+                'suggestion': 'Enfocarse en refinar detalles específicos.'
             })
         
-        # Recomendación según conceptos huérfanos
         if orphans_a > 0:
             recommendations.append({
                 'severity': 'info',
                 'category': 'orphan_concepts_a',
                 'message': f'Texto A contiene {orphans_a} concepto(s) sin equivalente cercano en Texto B',
-                'suggestion': 'Considerar agregar estos conceptos a Texto B o verificar si son realmente necesarios.',
+                'suggestion': 'Considerar agregar estos conceptos a Texto B.',
                 'details': results['gaps']['text_a_orphans'][:3]
             })
         
@@ -234,55 +175,42 @@ class GapDetector:
                 'severity': 'info',
                 'category': 'orphan_concepts_b',
                 'message': f'Texto B contiene {orphans_b} concepto(s) sin equivalente cercano en Texto A',
-                'suggestion': 'Considerar agregar estos conceptos a Texto A o verificar si son realmente necesarios.',
+                'suggestion': 'Considerar agregar estos conceptos a Texto A.',
                 'details': results['gaps']['text_b_orphans'][:3]
             })
         
-        # Recomendación según vocabulario
         if vocab_overlap < 0.3:
             recommendations.append({
                 'severity': 'medium',
                 'category': 'vocabulary',
                 'message': f'Vocabulario compartido muy bajo ({vocab_overlap:.1%})',
-                'suggestion': 'Los textos usan lenguajes muy diferentes. Considerar crear un glosario de términos equivalentes o usar vocabulario más uniforme.'
+                'suggestion': 'Los textos usan lenguajes muy diferentes.'
             })
         
         return recommendations
     
     def generate_summary(self, results: Dict) -> str:
-        """
-        Genera resumen legible del análisis.
-        
-        Args:
-            results: Output de detect_gaps()
-        
-        Returns:
-            String con resumen formateado
-        """
+        """Genera resumen legible del análisis."""
         lines = ["\n" + "="*60]
         lines.append("📊 ANÁLISIS DE DESACOPLAMIENTO SEMÁNTICO")
         lines.append("="*60)
         
-        # Métricas globales
         lines.append(f"\n🔗 Similaridad Global: {results['global_similarity']:.1%}")
         lines.append(f"{'✅ ACOPLADO' if results['is_coupled'] else '❌ DESACOPLADO'}")
         lines.append(f"⚠️  Severidad del Gap: {results['gaps']['gap_severity']:.1%}")
         
-        # Vocabulario
         vocab = results['vocabulary_analysis']
         lines.append(f"\n📚 Vocabulario:")
         lines.append(f"  • Overlap: {vocab['vocabulary_overlap']:.1%}")
         lines.append(f"  • Único en A: {len(vocab['unique_to_a'])} palabras")
         lines.append(f"  • Único en B: {len(vocab['unique_to_b'])} palabras")
         
-        # Conceptos huérfanos
         lines.append(f"\n🔸 Conceptos Huérfanos:")
         lines.append(f"  • En Texto A: {results['gaps']['orphan_count_a']}")
         lines.append(f"  • En Texto B: {results['gaps']['orphan_count_b']}")
         
-        # Recomendaciones
         lines.append(f"\n💡 Recomendaciones:")
-        for i, rec in enumerate(results['recommendations'][:3], 1):
+        for rec in results['recommendations'][:3]:
             severity_emoji = {'high': '🔴', 'medium': '🟡', 'low': '🟢', 'info': 'ℹ️'}
             emoji = severity_emoji.get(rec['severity'], '•')
             lines.append(f"  {emoji} {rec['message']}")
@@ -290,10 +218,3 @@ class GapDetector:
         lines.append("="*60 + "\n")
         
         return "\n".join(lines)
-
-
-# NO incluir test aquí para evitar el problema de torch
-# El test se hará desde analyzer.py
-
-if __name__ == "__main__":
-    print("⚠️  Ejecutá el test desde analyzer.py para evitar problemas de imports")
