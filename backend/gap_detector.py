@@ -5,7 +5,8 @@ Identifica desacoplamientos entre dos textos
 
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-import spacy
+from typing import Dict, List
+from backend.simple_splitter import extract_keywords
 from typing import Dict, List, Tuple
 
 class GapDetector:
@@ -25,9 +26,6 @@ class GapDetector:
         
         Args:
             threshold: Similaridad mínima para considerar "acoplado"
-                - 0.7+: Muy similar (bien acoplado)
-                - 0.5-0.7: Moderadamente similar
-                - <0.5: Poco similar (desacoplado)
             language: 'es' o 'en' para análisis de vocabulario
         """
         self.threshold = threshold
@@ -40,7 +38,7 @@ class GapDetector:
         else:
             import en_core_web_sm
             self.nlp = en_core_web_sm.load()
-            
+
         import subprocess
         subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
         self.nlp = spacy.load('en_core_web_sm')
@@ -129,16 +127,33 @@ class GapDetector:
         Returns:
             Dict con análisis de vocabulario
         """
-        def extract_keywords(text: str) -> set:
-            """Extrae palabras clave importantes"""
-            doc = self.nlp(text)
-            return {
-                token.lemma_.lower() 
-                for token in doc 
-                if token.pos_ in ['NOUN', 'VERB', 'ADJ'] 
-                and not token.is_stop
-                and len(token.text) > 3
-            }
+        def _analyze_vocabulary(self, text_a_data: Dict, text_b_data: Dict) -> Dict:
+        """
+        Detecta palabras técnicas/únicas en cada texto.
+        """
+        # Extraer keywords de ambos textos
+        text_a_full = ' '.join(text_a_data['sentences'])
+        text_b_full = ' '.join(text_b_data['sentences'])
+        
+        keywords_a = extract_keywords(text_a_full, self.language)
+        keywords_b = extract_keywords(text_b_full, self.language)
+        
+        # Calcular overlap
+        shared = keywords_a & keywords_b
+        unique_a = keywords_a - keywords_b
+        unique_b = keywords_b - keywords_a
+        
+        total_unique = len(keywords_a | keywords_b)
+        overlap_ratio = len(shared) / total_unique if total_unique > 0 else 0
+        
+        return {
+            'unique_to_a': sorted(list(unique_a))[:20],
+            'unique_to_b': sorted(list(unique_b))[:20],
+            'shared': sorted(list(shared))[:20],
+            'vocabulary_overlap': float(overlap_ratio),
+            'total_keywords_a': len(keywords_a),
+            'total_keywords_b': len(keywords_b)
+        }
         
         # Extraer keywords de ambos textos
         text_a_full = ' '.join(text_a_data['sentences'])
