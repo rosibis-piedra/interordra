@@ -32,20 +32,21 @@ class SemanticEmbedder:
         
         # Cargar modelo de spaCy para división de oraciones
         # Cargar modelo de spaCy para división de oraciones
-if language == 'es':
-    try:
-        self.nlp = spacy.load('es_core_news_sm')
-    except:
-        import subprocess
-        subprocess.run(["python", "-m", "spacy", "download", "es_core_news_sm"])
-        self.nlp = spacy.load('es_core_news_sm')
-else:
-    try:
-        self.nlp = spacy.load('en_core_web_sm')
-    except:
-        import subprocess
-        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
-        self.nlp = spacy.load('en_core_web_sm')
+        
+        if language == 'es':
+            try:
+                self.nlp = spacy.load('es_core_news_sm')
+            except:
+                import subprocess
+                subprocess.run(["python", "-m", "spacy", "download", "es_core_news_sm"])
+                self.nlp = spacy.load('es_core_news_sm')
+        else:
+            try:
+                self.nlp = spacy.load('en_core_web_sm')
+            except:
+                import subprocess
+                subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+                self.nlp = spacy.load('en_core_web_sm')
         
         print(f"✅ Modelo cargado. Dimensión de embeddings: {self.model.get_sentence_embedding_dimension()}")
     
