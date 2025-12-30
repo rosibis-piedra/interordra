@@ -8,11 +8,11 @@
 
 ---
 
-## What It Does
+## 🎯 What It Does
 
 InterOrdra analyzes any pair of texts and reveals exactly where and why they don't understand each other - detecting gaps in vocabulary, orphaned concepts, and topological misalignment in semantic space.
 
-## Use Cases
+InterOrdra reveals **why** by analyzing the semantic topology between any two texts.
 
 - 📚 **Technical documentation vs user questions** - Find what's missing in your docs
 - 🤖 **AI prompts vs expected responses** - Optimize prompt engineering  
