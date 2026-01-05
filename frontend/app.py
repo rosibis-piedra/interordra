@@ -4,17 +4,42 @@ Aplicación Streamlit para análisis de desacoplamientos semánticos
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import sys
 import os
 
 # Agregar backend al path
-# Agregar backend al path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from backend.analyzer import InterOrdraAnalyzer
 
+# Google Analytics
+def inject_ga():
+    """Inyecta código de Google Analytics"""
+    ga_code = """
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BZPFS4HWR2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-BZPFS4HWR2');
+    </script>
+    """
+    components.html(ga_code, height=0)
+
 # Configuración de la página
+st.set_page_config(
+    page_title="InterOrdra - Detector of Semantic Gaps",
+    page_icon="🌉",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Activar Google Analytics
+inject_ga()
+
 st.set_page_config(
     page_title="InterOrdra - Detector de Gaps Semánticos",
     page_icon="🌉",
