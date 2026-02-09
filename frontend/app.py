@@ -8,6 +8,7 @@ import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import sys
 import os
+import io
 
 # Agregar backend al path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -28,6 +29,31 @@ def inject_ga():
     </script>
     """
     components.html(ga_code, height=0)
+
+# --- Funciones de extracción de texto ---
+def extract_text_from_pdf(uploaded_file):
+    import pdfplumber
+    with pdfplumber.open(uploaded_file) as pdf:
+        pages = [page.extract_text() or "" for page in pdf.pages]
+    return "\n".join(pages).strip()
+
+def extract_text_from_txt(uploaded_file):
+    return uploaded_file.read().decode('utf-8')
+
+def extract_text_from_docx(uploaded_file):
+    from docx import Document
+    doc = Document(uploaded_file)
+    return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+def extract_text(uploaded_file):
+    name = uploaded_file.name.lower()
+    if name.endswith('.pdf'):
+        return extract_text_from_pdf(uploaded_file)
+    elif name.endswith('.txt'):
+        return extract_text_from_txt(uploaded_file)
+    elif name.endswith('.docx'):
+        return extract_text_from_docx(uploaded_file)
+    return ""
 
 # Configuración de la página
 st.set_page_config(
@@ -121,6 +147,13 @@ InterOrdra usa:
         'recommendations_title': '### 💡 Recomendaciones',
         'footer_tagline': 'Construyendo puentes entre sistemas diversos',
         'footer_role': 'Arquitecta de interfaces inter-sistémicas',
+        'input_mode': 'Método de entrada',
+        'write_text': '✍️ Escribir texto',
+        'upload_file': '📁 Subir archivo',
+        'upload_label': 'Subir archivo (PDF, TXT, DOCX)',
+        'file_preview': 'Vista previa del texto extraído',
+        'chars_extracted': 'caracteres extraídos',
+        'extract_error': 'Error al extraer texto del archivo',
     },
     'en': {
         'config': '⚙️ Settings',
@@ -201,6 +234,13 @@ InterOrdra uses:
         'recommendations_title': '### 💡 Recommendations',
         'footer_tagline': 'Building bridges between diverse systems',
         'footer_role': 'Inter-systemic interface architect',
+        'input_mode': 'Input method',
+        'write_text': '✍️ Write text',
+        'upload_file': '📁 Upload file',
+        'upload_label': 'Upload file (PDF, TXT, DOCX)',
+        'file_preview': 'Preview of extracted text',
+        'chars_extracted': 'characters extracted',
+        'extract_error': 'Error extracting text from file',
     }
 }
 
@@ -293,12 +333,34 @@ with col1:
         value=t('default_label_a'),
         key="label_a"
     )
-    text_a = st.text_area(
-        t('input_a'),
-        height=250,
-        placeholder=t('placeholder_a'),
-        key="text_a"
+    mode_a = st.radio(
+        t('input_mode'),
+        [t('write_text'), t('upload_file')],
+        key="mode_a",
+        horizontal=True
     )
+    if mode_a == t('write_text'):
+        text_a = st.text_area(
+            t('input_a'),
+            height=250,
+            placeholder=t('placeholder_a'),
+            key="text_a"
+        )
+    else:
+        file_a = st.file_uploader(
+            t('upload_label'),
+            type=['pdf', 'txt', 'docx'],
+            key="file_a"
+        )
+        text_a = ""
+        if file_a:
+            try:
+                text_a = extract_text(file_a)
+                st.success(f"✅ {len(text_a)} {t('chars_extracted')}")
+                with st.expander(t('file_preview')):
+                    st.text(text_a[:1000] + ("..." if len(text_a) > 1000 else ""))
+            except Exception as e:
+                st.error(f"{t('extract_error')}: {e}")
 
 with col2:
     st.subheader(t('text_b_header'))
@@ -307,12 +369,34 @@ with col2:
         value=t('default_label_b'),
         key="label_b"
     )
-    text_b = st.text_area(
-        t('input_b'),
-        height=250,
-        placeholder=t('placeholder_b'),
-        key="text_b"
+    mode_b = st.radio(
+        t('input_mode'),
+        [t('write_text'), t('upload_file')],
+        key="mode_b",
+        horizontal=True
     )
+    if mode_b == t('write_text'):
+        text_b = st.text_area(
+            t('input_b'),
+            height=250,
+            placeholder=t('placeholder_b'),
+            key="text_b"
+        )
+    else:
+        file_b = st.file_uploader(
+            t('upload_label'),
+            type=['pdf', 'txt', 'docx'],
+            key="file_b"
+        )
+        text_b = ""
+        if file_b:
+            try:
+                text_b = extract_text(file_b)
+                st.success(f"✅ {len(text_b)} {t('chars_extracted')}")
+                with st.expander(t('file_preview')):
+                    st.text(text_b[:1000] + ("..." if len(text_b) > 1000 else ""))
+            except Exception as e:
+                st.error(f"{t('extract_error')}: {e}")
 
 # Ejemplos precargados
 with st.expander(t('load_example')):
