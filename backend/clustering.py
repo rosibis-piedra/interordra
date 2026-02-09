@@ -165,14 +165,14 @@ class ConceptClusterer:
         Returns:
             String con resumen
         """
-        summary_lines = ["\n📊 Resumen de Clusters:\n"]
+        summary_lines = ["\nResumen de Clusters:\n"]
         
         for cluster_id, cluster_info in sorted(clusters.items()):
             if cluster_id == -1:
-                summary_lines.append(f"🔸 Conceptos aislados ({cluster_info['size']}):")
+                summary_lines.append(f"Conceptos aislados ({cluster_info['size']}):")
             else:
                 summary_lines.append(
-                    f"🔹 Cluster {cluster_id} ({cluster_info['size']} oraciones, "
+                    f"Cluster {cluster_id} ({cluster_info['size']} oraciones, "
                     f"densidad: {cluster_info['density']:.2f}):"
                 )
             
@@ -193,7 +193,7 @@ def test_clusterer():
     """Prueba rápida del clusterer"""
     from embeddings import SemanticEmbedder
     
-    print("\n🧪 Probando ConceptClusterer...\n")
+    print("\nProbando ConceptClusterer...\n")
     
     # Crear embedder
     embedder = SemanticEmbedder(language='es')
@@ -218,7 +218,7 @@ def test_clusterer():
     # Mostrar resumen
     print(clusterer.get_cluster_summary(clusters))
     
-    print("✅ Test completado!")
+    print("Test completado!")
 
 
 if __name__ == "__main__":

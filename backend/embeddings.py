@@ -26,11 +26,11 @@ class SemanticEmbedder:
                 - 'paraphrase-multilingual-mpnet-base-v2': Más preciso, 768 dim
             language: 'es' o 'en' para procesamiento de oraciones
         """
-        print(f"🔄 Cargando modelo {model_name}...")
+        print(f"Cargando modelo {model_name}...")
         self.model = SentenceTransformer(model_name)
         self.language = language
         
-        print(f"✅ Modelo cargado. Dimensión de embeddings: {self.model.get_sentence_embedding_dimension()}")
+        print(f"Modelo cargado. Dimension de embeddings: {self.model.get_sentence_embedding_dimension()}")
     
     def embed_text(self, text: str, return_global: bool = True) -> Dict:
         """
@@ -92,7 +92,7 @@ class SemanticEmbedder:
 # Función de testing
 def test_embedder():
     """Prueba rápida del embedder"""
-    print("\n🧪 Probando SemanticEmbedder...\n")
+    print("\nProbando SemanticEmbedder...\n")
     
     # Crear embedder
     embedder = SemanticEmbedder(language='es')
@@ -104,9 +104,9 @@ def test_embedder():
     result = embedder.embed_text(texto)
     
     # Mostrar resultados
-    print("📊 Resultados:")
+    print("Resultados:")
     print(f"Oraciones detectadas: {result['num_sentences']}")
-    print(f"Dimensión de embeddings: {result['embeddings'].shape[1]}")
+    print(f"Dimension de embeddings: {result['embeddings'].shape[1]}")
     print("Oraciones:")
     for i, sent in enumerate(result['sentences'], 1):
         print(f"  {i}. {sent}")
@@ -114,9 +114,9 @@ def test_embedder():
     # Calcular similaridad entre oraciones
     if result['num_sentences'] >= 2:
         sim = embedder.compute_similarity(result['embeddings'][0], result['embeddings'][1])
-        print(f"Similaridad entre oración 1 y 2: {sim:.3f}")
+        print(f"Similaridad entre oracion 1 y 2: {sim:.3f}")
     
-    print("\n✅ Test completado exitosamente!")
+    print("\nTest completado exitosamente!")
 
 
 if __name__ == "__main__":

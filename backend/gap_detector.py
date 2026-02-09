@@ -192,28 +192,28 @@ class GapDetector:
     def generate_summary(self, results: Dict) -> str:
         """Genera resumen legible del análisis."""
         lines = ["\n" + "="*60]
-        lines.append("📊 ANÁLISIS DE DESACOPLAMIENTO SEMÁNTICO")
+        lines.append("ANALISIS DE DESACOPLAMIENTO SEMANTICO")
         lines.append("="*60)
-        
-        lines.append(f"\n🔗 Similaridad Global: {results['global_similarity']:.1%}")
-        lines.append(f"{'✅ ACOPLADO' if results['is_coupled'] else '❌ DESACOPLADO'}")
-        lines.append(f"⚠️  Severidad del Gap: {results['gaps']['gap_severity']:.1%}")
-        
+
+        lines.append(f"\nSimilaridad Global: {results['global_similarity']:.1%}")
+        lines.append(f"{'ACOPLADO' if results['is_coupled'] else 'DESACOPLADO'}")
+        lines.append(f"Severidad del Gap: {results['gaps']['gap_severity']:.1%}")
+
         vocab = results['vocabulary_analysis']
-        lines.append(f"\n📚 Vocabulario:")
-        lines.append(f"  • Overlap: {vocab['vocabulary_overlap']:.1%}")
-        lines.append(f"  • Único en A: {len(vocab['unique_to_a'])} palabras")
-        lines.append(f"  • Único en B: {len(vocab['unique_to_b'])} palabras")
-        
-        lines.append(f"\n🔸 Conceptos Huérfanos:")
-        lines.append(f"  • En Texto A: {results['gaps']['orphan_count_a']}")
-        lines.append(f"  • En Texto B: {results['gaps']['orphan_count_b']}")
-        
-        lines.append(f"\n💡 Recomendaciones:")
+        lines.append(f"\nVocabulario:")
+        lines.append(f"  * Overlap: {vocab['vocabulary_overlap']:.1%}")
+        lines.append(f"  * Unico en A: {len(vocab['unique_to_a'])} palabras")
+        lines.append(f"  * Unico en B: {len(vocab['unique_to_b'])} palabras")
+
+        lines.append(f"\nConceptos Huerfanos:")
+        lines.append(f"  * En Texto A: {results['gaps']['orphan_count_a']}")
+        lines.append(f"  * En Texto B: {results['gaps']['orphan_count_b']}")
+
+        lines.append(f"\nRecomendaciones:")
         for rec in results['recommendations'][:3]:
-            severity_emoji = {'high': '🔴', 'medium': '🟡', 'low': '🟢', 'info': 'ℹ️'}
-            emoji = severity_emoji.get(rec['severity'], '•')
-            lines.append(f"  {emoji} {rec['message']}")
+            severity_marker = {'high': '[!]', 'medium': '[~]', 'low': '[+]', 'info': '[i]'}
+            marker = severity_marker.get(rec['severity'], '*')
+            lines.append(f"  {marker} {rec['message']}")
         
         lines.append("="*60 + "\n")
         
