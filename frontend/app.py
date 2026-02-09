@@ -1,5 +1,5 @@
 """
-InterOrdra - Interfaz Web
+InterOrdra - Interfaz Web / Web Interface
 Aplicación Streamlit para análisis de desacoplamientos semánticos
 """
 
@@ -31,7 +31,7 @@ def inject_ga():
 
 # Configuración de la página
 st.set_page_config(
-    page_title="InterOrdra - Detector of Semantic Gaps",
+    page_title="InterOrdra - Semantic Gap Detector",
     page_icon="🌉",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -40,12 +40,169 @@ st.set_page_config(
 # Activar Google Analytics
 inject_ga()
 
-st.set_page_config(
-    page_title="InterOrdra - Detector de Gaps Semánticos",
-    page_icon="🌉",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# --- TRADUCCIONES / TRANSLATIONS ---
+TRANSLATIONS = {
+    'es': {
+        'config': '⚙️ Configuración',
+        'threshold': 'Umbral de acoplamiento',
+        'threshold_help': 'Similaridad mínima para considerar dos conceptos "acoplados"',
+        'how_it_works_title': '### 💡 ¿Cómo funciona?',
+        'how_it_works': """
+1. **Ingresá dos textos** que querés comparar
+2. **InterOrdra analiza** su topología semántica
+3. **Visualizá** gaps y desacoplamientos
+4. **Recibí recomendaciones** para mejorar
+""",
+        'use_cases_title': '### 📖 Casos de uso',
+        'use_cases': """
+- Documentación técnica vs pregunta de usuario
+- Prompt de IA vs respuesta esperada
+- Artículo científico vs divulgación
+- Manual vs FAQ
+""",
+        'tech_title': '### 🧠 Tecnología',
+        'tech': """
+InterOrdra usa:
+- Sentence Transformers para embeddings
+- DBSCAN para clustering
+- Análisis de similaridad coseno
+- Visualización 3D con PCA
+""",
+        'created_by': '*Creado por [Rosibis](https://github.com/rosibis)*',
+        'architect': '*Arquitecta de puentes semánticos*',
+        'subtitle': 'Hace visible la estructura del malentendido',
+        'texts_to_analyze': '## 📝 Textos a Analizar',
+        'text_a_header': '📄 Texto A',
+        'text_b_header': '📄 Texto B',
+        'label_a': 'Etiqueta para Texto A',
+        'label_b': 'Etiqueta para Texto B',
+        'default_label_a': 'Documentación Técnica',
+        'default_label_b': 'Pregunta de Usuario',
+        'input_a': 'Ingresá el primer texto',
+        'input_b': 'Ingresá el segundo texto',
+        'placeholder_a': 'Ej: Manual técnico, artículo científico, documentación...',
+        'placeholder_b': 'Ej: Pregunta, explicación simplificada, feedback...',
+        'load_example': '📚 Cargar ejemplo',
+        'select_example': 'Seleccioná un ejemplo',
+        'example_none': 'Ninguno',
+        'example_tech': 'Documentación Técnica vs Usuario',
+        'example_science': 'Artículo Científico vs Divulgación',
+        'example_prompt': 'Prompt IA - Confuso vs Claro',
+        'load_this': 'Cargar este ejemplo',
+        'example_tech_a': """El sistema utiliza embeddings vectoriales de alta dimensión para representar información semántica. Los transformers pre-entrenados generan representaciones contextuales mediante mecanismos de atención multi-cabeza. La arquitectura implementa capas de normalización y conexiones residuales para estabilidad.""",
+        'example_tech_b': """¿Cómo funciona esto? No entiendo qué significa que use vectores. ¿Qué es un transformer? ¿Por qué necesito saber de matemáticas avanzadas? Solo quiero que mi aplicación entienda texto en español.""",
+        'analyze_button': '🔍 Analizar Desacoplamiento',
+        'error_no_text': '⚠️ Por favor ingresá ambos textos antes de analizar',
+        'spinner': '🔄 Analizando topología semántica...',
+        'results_title': '## 📊 Resultados del Análisis',
+        'metric_similarity': 'Similaridad Global',
+        'metric_coupled': 'Acoplado',
+        'metric_decoupled': 'Desacoplado',
+        'metric_gap_severity': 'Severidad del Gap',
+        'metric_vocab_overlap': 'Overlap de Vocabulario',
+        'metric_orphans': 'Conceptos Huérfanos',
+        'topology_title': '### 🗺️ Topología Semántica 3D',
+        'topology_subtitle': '*Cada punto es una oración. Distancia = diferencia semántica*',
+        'dim1': 'Dimensión 1',
+        'dim2': 'Dimensión 2',
+        'dim3': 'Dimensión 3',
+        'coordinates': 'Coordenadas',
+        'gaps_title': '### 🔍 Desacoplamientos Detectados',
+        'orphans_in': '🔸 Huérfanos en',
+        'vocabulary_tab': '📚 Vocabulario',
+        'orphan_count': 'concepto(s) sin equivalente cercano en',
+        'full_sentence': 'Oración completa',
+        'best_match_in': 'Mejor match en',
+        'similarity_label': 'Similaridad',
+        'all_concepts_matched': '✅ Todos los conceptos de {a} tienen equivalente en {b}',
+        'unique_in': 'Único en',
+        'shared_vocab': 'Vocabulario Compartido',
+        'none_text': '*(ninguno)*',
+        'recommendations_title': '### 💡 Recomendaciones',
+        'footer_tagline': 'Construyendo puentes entre sistemas diversos',
+        'footer_role': 'Arquitecta de interfaces inter-sistémicas',
+    },
+    'en': {
+        'config': '⚙️ Settings',
+        'threshold': 'Coupling threshold',
+        'threshold_help': 'Minimum similarity to consider two concepts "coupled"',
+        'how_it_works_title': '### 💡 How does it work?',
+        'how_it_works': """
+1. **Enter two texts** you want to compare
+2. **InterOrdra analyzes** their semantic topology
+3. **Visualize** gaps and decouplings
+4. **Get recommendations** to improve
+""",
+        'use_cases_title': '### 📖 Use Cases',
+        'use_cases': """
+- Technical documentation vs user question
+- AI prompt vs expected response
+- Scientific article vs popular science
+- Manual vs FAQ
+""",
+        'tech_title': '### 🧠 Technology',
+        'tech': """
+InterOrdra uses:
+- Sentence Transformers for embeddings
+- DBSCAN for clustering
+- Cosine similarity analysis
+- 3D visualization with PCA
+""",
+        'created_by': '*Created by [Rosibis](https://github.com/rosibis)*',
+        'architect': '*Semantic bridge architect*',
+        'subtitle': 'Making the structure of misunderstanding visible',
+        'texts_to_analyze': '## 📝 Texts to Analyze',
+        'text_a_header': '📄 Text A',
+        'text_b_header': '📄 Text B',
+        'label_a': 'Label for Text A',
+        'label_b': 'Label for Text B',
+        'default_label_a': 'Technical Documentation',
+        'default_label_b': 'User Question',
+        'input_a': 'Enter the first text',
+        'input_b': 'Enter the second text',
+        'placeholder_a': 'E.g.: Technical manual, scientific article, documentation...',
+        'placeholder_b': 'E.g.: Question, simplified explanation, feedback...',
+        'load_example': '📚 Load Example',
+        'select_example': 'Select an example',
+        'example_none': 'None',
+        'example_tech': 'Technical Documentation vs User',
+        'example_science': 'Scientific Article vs Popular Science',
+        'example_prompt': 'AI Prompt - Confusing vs Clear',
+        'load_this': 'Load this example',
+        'example_tech_a': """The system uses high-dimensional vector embeddings to represent semantic information. Pre-trained transformers generate contextual representations through multi-head attention mechanisms. The architecture implements normalization layers and residual connections for stability.""",
+        'example_tech_b': """How does this work? I don't understand what it means to use vectors. What is a transformer? Why do I need to know advanced mathematics? I just want my application to understand text in English.""",
+        'analyze_button': '🔍 Analyze Decoupling',
+        'error_no_text': '⚠️ Please enter both texts before analyzing',
+        'spinner': '🔄 Analyzing semantic topology...',
+        'results_title': '## 📊 Analysis Results',
+        'metric_similarity': 'Global Similarity',
+        'metric_coupled': 'Coupled',
+        'metric_decoupled': 'Decoupled',
+        'metric_gap_severity': 'Gap Severity',
+        'metric_vocab_overlap': 'Vocabulary Overlap',
+        'metric_orphans': 'Orphan Concepts',
+        'topology_title': '### 🗺️ 3D Semantic Topology',
+        'topology_subtitle': '*Each point is a sentence. Distance = semantic difference*',
+        'dim1': 'Dimension 1',
+        'dim2': 'Dimension 2',
+        'dim3': 'Dimension 3',
+        'coordinates': 'Coordinates',
+        'gaps_title': '### 🔍 Detected Decouplings',
+        'orphans_in': '🔸 Orphans in',
+        'vocabulary_tab': '📚 Vocabulary',
+        'orphan_count': 'concept(s) with no close equivalent in',
+        'full_sentence': 'Full sentence',
+        'best_match_in': 'Best match in',
+        'similarity_label': 'Similarity',
+        'all_concepts_matched': '✅ All concepts from {a} have an equivalent in {b}',
+        'unique_in': 'Unique to',
+        'shared_vocab': 'Shared Vocabulary',
+        'none_text': '*(none)*',
+        'recommendations_title': '### 💡 Recommendations',
+        'footer_tagline': 'Building bridges between diverse systems',
+        'footer_role': 'Inter-systemic interface architect',
+    }
+}
 
 # CSS personalizado
 st.markdown("""
@@ -77,117 +234,109 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Título
-st.markdown('<div class="main-title">🌉 InterOrdra</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Hace visible la estructura del malentendido</div>', unsafe_allow_html=True)
-
-# Sidebar con información
+# Sidebar con selector de idioma y configuración
 with st.sidebar:
-    st.header("⚙️ Configuración")
-    
+    lang = st.selectbox(
+        "🌐",
+        options=['es', 'en'],
+        index=0,
+        format_func=lambda x: "🇪🇸 Español" if x == 'es' else "🇬🇧 English",
+        key="lang"
+    )
+
+def t(key):
+    """Devuelve el texto traducido según el idioma seleccionado."""
+    return TRANSLATIONS[lang][key]
+
+# Sidebar - resto de configuración
+with st.sidebar:
+    st.header(t('config'))
+
     threshold = st.slider(
-        "Umbral de acoplamiento",
+        t('threshold'),
         min_value=0.0,
         max_value=1.0,
         value=0.5,
         step=0.05,
-        help="Similaridad mínima para considerar dos conceptos 'acoplados'"
+        help=t('threshold_help')
     )
-    
-    language = st.selectbox(
-        "Idioma",
-        options=['es', 'en'],
-        index=0,
-        format_func=lambda x: "🇪🇸 Español" if x == 'es' else "🇬🇧 English"
-    )
-    
+
     st.markdown("---")
-    
-    st.markdown("""
-    ### 💡 ¿Cómo funciona?
-    
-    1. **Ingresá dos textos** que querés comparar
-    2. **InterOrdra analiza** su topología semántica
-    3. **Visualizá** gaps y desacoplamientos
-    4. **Recibí recomendaciones** para mejorar
-    
-    ### 📖 Casos de uso
-    
-    - Documentación técnica vs pregunta de usuario
-    - Prompt de IA vs respuesta esperada
-    - Artículo científico vs divulgación
-    - Manual vs FAQ
-    
-    ### 🧠 Tecnología
-    
-    InterOrdra usa:
-    - Sentence Transformers para embeddings
-    - DBSCAN para clustering
-    - Análisis de similaridad coseno
-    - Visualización 3D con PCA
-    
-    ---
-    
-    *Creado por [Rosibis](https://github.com/rosibis)*  
-    *Arquitecta de puentes semánticos*
-    """)
+
+    st.markdown(t('how_it_works_title'))
+    st.markdown(t('how_it_works'))
+
+    st.markdown(t('use_cases_title'))
+    st.markdown(t('use_cases'))
+
+    st.markdown(t('tech_title'))
+    st.markdown(t('tech'))
+
+    st.markdown("---")
+
+    st.markdown(t('created_by'))
+    st.markdown(t('architect'))
+
+# Título
+st.markdown('<div class="main-title">🌉 InterOrdra</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="subtitle">{t("subtitle")}</div>', unsafe_allow_html=True)
 
 # Inputs principales
-st.markdown("## 📝 Textos a Analizar")
+st.markdown(t('texts_to_analyze'))
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📄 Texto A")
+    st.subheader(t('text_a_header'))
     label_a = st.text_input(
-        "Etiqueta para Texto A",
-        value="Documentación Técnica",
+        t('label_a'),
+        value=t('default_label_a'),
         key="label_a"
     )
     text_a = st.text_area(
-        "Ingresá el primer texto",
+        t('input_a'),
         height=250,
-        placeholder="Ej: Manual técnico, artículo científico, documentación...",
+        placeholder=t('placeholder_a'),
         key="text_a"
     )
 
 with col2:
-    st.subheader("📄 Texto B")
+    st.subheader(t('text_b_header'))
     label_b = st.text_input(
-        "Etiqueta para Texto B",
-        value="Pregunta de Usuario",
+        t('label_b'),
+        value=t('default_label_b'),
         key="label_b"
     )
     text_b = st.text_area(
-        "Ingresá el segundo texto",
+        t('input_b'),
         height=250,
-        placeholder="Ej: Pregunta, explicación simplificada, feedback...",
+        placeholder=t('placeholder_b'),
         key="text_b"
     )
 
 # Ejemplos precargados
-with st.expander("📚 Cargar ejemplo"):
+with st.expander(t('load_example')):
     ejemplo = st.selectbox(
-        "Seleccioná un ejemplo",
+        t('select_example'),
         options=[
-            "Ninguno",
-            "Documentación Técnica vs Usuario",
-            "Artículo Científico vs Divulgación",
-            "Prompt IA - Confuso vs Claro"
+            t('example_none'),
+            t('example_tech'),
+            t('example_science'),
+            t('example_prompt')
         ]
     )
-    
-    if ejemplo == "Documentación Técnica vs Usuario":
-        if st.button("Cargar este ejemplo"):
-            st.session_state.text_a = """El sistema utiliza embeddings vectoriales de alta dimensión para representar información semántica. Los transformers pre-entrenados generan representaciones contextuales mediante mecanismos de atención multi-cabeza. La arquitectura implementa capas de normalización y conexiones residuales para estabilidad."""
-            st.session_state.text_b = """¿Cómo funciona esto? No entiendo qué significa que use vectores. ¿Qué es un transformer? ¿Por qué necesito saber de matemáticas avanzadas? Solo quiero que mi aplicación entienda texto en español."""
+
+    if ejemplo == t('example_tech'):
+        if st.button(t('load_this')):
+            st.session_state.text_a = t('example_tech_a')
+            st.session_state.text_b = t('example_tech_b')
             st.rerun()
 
 # Botón de análisis
 st.markdown("---")
 
 analyze_button = st.button(
-    "🔍 Analizar Desacoplamiento",
+    t('analyze_button'),
     type="primary",
     use_container_width=True
 )
@@ -195,60 +344,59 @@ analyze_button = st.button(
 # Análisis
 if analyze_button:
     if not text_a or not text_b:
-        st.error("⚠️ Por favor ingresá ambos textos antes de analizar")
+        st.error(t('error_no_text'))
     else:
-        with st.spinner("🔄 Analizando topología semántica..."):
+        with st.spinner(t('spinner')):
             # Inicializar analyzer
-            analyzer = InterOrdraAnalyzer(language=language, threshold=threshold)
-            
+            analyzer = InterOrdraAnalyzer(language=lang, threshold=threshold)
+
             # Ejecutar análisis
             results = analyzer.analyze(text_a, text_b, label_a, label_b)
-        
+
         # Mostrar resultados
         st.markdown("---")
-        st.markdown("## 📊 Resultados del Análisis")
-        
+        st.markdown(t('results_title'))
+
         # Métricas principales
         col1, col2, col3, col4 = st.columns(4)
-        
+
         sim = results['gaps']['global_similarity']
         gap_severity = results['gaps']['gaps']['gap_severity']
         vocab_overlap = results['gaps']['vocabulary_analysis']['vocabulary_overlap']
-        
+
         with col1:
-            color_class = "metric-good" if sim > 0.7 else "metric-warning" if sim > 0.5 else "metric-bad"
             st.metric(
-                "Similaridad Global",
+                t('metric_similarity'),
                 f"{sim:.1%}",
-                delta="Acoplado" if results['gaps']['is_coupled'] else "Desacoplado"
+                delta=t('metric_coupled') if results['gaps']['is_coupled'] else t('metric_decoupled')
             )
-        
+
         with col2:
             st.metric(
-                "Severidad del Gap",
+                t('metric_gap_severity'),
                 f"{gap_severity:.1%}"
             )
-        
+
         with col3:
             st.metric(
-                "Overlap de Vocabulario",
+                t('metric_vocab_overlap'),
                 f"{vocab_overlap:.1%}"
             )
-        
+
         with col4:
             total_orphans = results['gaps']['gaps']['orphan_count_a'] + results['gaps']['gaps']['orphan_count_b']
             st.metric(
-                "Conceptos Huérfanos",
+                t('metric_orphans'),
                 total_orphans
             )
-        
+
         # Visualización 3D
         st.markdown("---")
-        st.markdown("### 🗺️ Topología Semántica 3D")
-        st.markdown("*Cada punto es una oración. Distancia = diferencia semántica*")
-        
+        st.markdown(t('topology_title'))
+        st.markdown(t('topology_subtitle'))
+
         fig = go.Figure()
-        
+
         # Puntos de texto A
         coords_a = results['text_a']['coords_3d']
         fig.add_trace(go.Scatter3d(
@@ -264,9 +412,9 @@ if analyze_button:
                 line=dict(color='white', width=1)
             ),
             text=results['text_a']['sentences'],
-            hovertemplate='<b>%{text}</b><br>Coordenadas: (%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>'
+            hovertemplate='<b>%{text}</b><br>' + t('coordinates') + ': (%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>'
         ))
-        
+
         # Puntos de texto B
         coords_b = results['text_b']['coords_3d']
         fig.add_trace(go.Scatter3d(
@@ -282,14 +430,14 @@ if analyze_button:
                 line=dict(color='white', width=1)
             ),
             text=results['text_b']['sentences'],
-            hovertemplate='<b>%{text}</b><br>Coordenadas: (%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>'
+            hovertemplate='<b>%{text}</b><br>' + t('coordinates') + ': (%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>'
         ))
-        
+
         fig.update_layout(
             scene=dict(
-                xaxis_title='Dimensión 1',
-                yaxis_title='Dimensión 2',
-                zaxis_title='Dimensión 3',
+                xaxis_title=t('dim1'),
+                yaxis_title=t('dim2'),
+                zaxis_title=t('dim3'),
                 bgcolor='rgba(0,0,0,0)'
             ),
             height=600,
@@ -303,74 +451,74 @@ if analyze_button:
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)'
         )
-        
+
         st.plotly_chart(fig, use_container_width=True)
-        
+
         # Gaps detectados
         st.markdown("---")
-        st.markdown("### 🔍 Desacoplamientos Detectados")
-        
+        st.markdown(t('gaps_title'))
+
         tab1, tab2, tab3 = st.tabs([
-            f"🔸 Huérfanos en {label_a}",
-            f"🔸 Huérfanos en {label_b}",
-            "📚 Vocabulario"
+            f"{t('orphans_in')} {label_a}",
+            f"{t('orphans_in')} {label_b}",
+            t('vocabulary_tab')
         ])
-        
+
         with tab1:
             orphans_a = results['gaps']['gaps']['text_a_orphans']
             if orphans_a:
-                st.markdown(f"**{len(orphans_a)} concepto(s) sin equivalente cercano en {label_b}:**")
+                st.markdown(f"**{len(orphans_a)} {t('orphan_count')} {label_b}:**")
                 for i, orphan in enumerate(orphans_a, 1):
                     with st.expander(f"{i}. {orphan['sentence'][:80]}..."):
-                        st.markdown(f"**Oración completa:**  \n{orphan['sentence']}")
-                        st.markdown(f"**Mejor match en {label_b}:**  \n{orphan['best_match_in_b']}")
+                        st.markdown(f"**{t('full_sentence')}:**  \n{orphan['sentence']}")
+                        st.markdown(f"**{t('best_match_in')} {label_b}:**  \n{orphan['best_match_in_b']}")
                         st.progress(orphan['best_match_similarity'])
-                        st.caption(f"Similaridad: {orphan['best_match_similarity']:.1%}")
+                        st.caption(f"{t('similarity_label')}: {orphan['best_match_similarity']:.1%}")
             else:
-                st.success(f"✅ Todos los conceptos de {label_a} tienen equivalente en {label_b}")
-        
+                st.success(t('all_concepts_matched').format(a=label_a, b=label_b))
+
         with tab2:
             orphans_b = results['gaps']['gaps']['text_b_orphans']
             if orphans_b:
-                st.markdown(f"**{len(orphans_b)} concepto(s) sin equivalente cercano en {label_a}:**")
+                st.markdown(f"**{len(orphans_b)} {t('orphan_count')} {label_a}:**")
                 for i, orphan in enumerate(orphans_b, 1):
                     with st.expander(f"{i}. {orphan['sentence'][:80]}..."):
-                        st.markdown(f"**Oración completa:**  \n{orphan['sentence']}")
-                        st.markdown(f"**Mejor match en {label_a}:**  \n{orphan['best_match_in_a']}")
+                        st.markdown(f"**{t('full_sentence')}:**  \n{orphan['sentence']}")
+                        st.markdown(f"**{t('best_match_in')} {label_a}:**  \n{orphan['best_match_in_a']}")
                         st.progress(orphan['best_match_similarity'])
-                        st.caption(f"Similaridad: {orphan['best_match_similarity']:.1%}")
+                        st.caption(f"{t('similarity_label')}: {orphan['best_match_similarity']:.1%}")
             else:
-                st.success(f"✅ Todos los conceptos de {label_b} tienen equivalente en {label_a}")
-        
+                st.success(t('all_concepts_matched').format(a=label_b, b=label_a))
+
         with tab3:
             vocab = results['gaps']['vocabulary_analysis']
-            
+
             col1, col2 = st.columns(2)
-            
+
             with col1:
-                st.markdown(f"**Único en {label_a}:**")
+                st.markdown(f"**{t('unique_in')} {label_a}:**")
                 if vocab['unique_to_a']:
                     st.write(", ".join(vocab['unique_to_a']))
                 else:
-                    st.write("*(ninguno)*")
-            
+                    st.write(t('none_text'))
+
             with col2:
-                st.markdown(f"**Único en {label_b}:**")
+                st.markdown(f"**{t('unique_in')} {label_b}:**")
                 if vocab['unique_to_b']:
                     st.write(", ".join(vocab['unique_to_b']))
                 else:
-                    st.write("*(ninguno)*")
-            
-            st.markdown("**Vocabulario Compartido:**")
+                    st.write(t('none_text'))
+
+            st.markdown(f"**{t('shared_vocab')}:**")
             if vocab['shared']:
                 st.write(", ".join(vocab['shared']))
             else:
-                st.write("*(ninguno)*")
-        
+                st.write(t('none_text'))
+
         # Recomendaciones
         st.markdown("---")
-        st.markdown("### 💡 Recomendaciones")
-        
+        st.markdown(t('recommendations_title'))
+
         for rec in results['gaps']['recommendations']:
             severity_emoji = {
                 'high': '🔴',
@@ -379,7 +527,7 @@ if analyze_button:
                 'info': 'ℹ️'
             }
             emoji = severity_emoji.get(rec['severity'], '•')
-            
+
             if rec['severity'] == 'high':
                 st.error(f"{emoji} **{rec['message']}**  \n{rec['suggestion']}")
             elif rec['severity'] == 'medium':
@@ -391,9 +539,9 @@ if analyze_button:
 
 # Footer
 st.markdown("---")
-st.markdown("""
+st.markdown(f"""
 <div style='text-align: center; color: #666; padding: 2rem 0;'>
-    <p><strong>InterOrdra v0.1.0</strong> • Construyendo puentes entre sistemas diversos</p>
-    <p>Creado por <a href='#'>Rosibis</a> • Arquitecta de interfaces inter-sistémicas</p>
+    <p><strong>InterOrdra v0.1.0</strong> • {t('footer_tagline')}</p>
+    <p>{'Creado por' if lang == 'es' else 'Created by'} <a href='#'>Rosibis</a> • {t('footer_role')}</p>
 </div>
 """, unsafe_allow_html=True)
