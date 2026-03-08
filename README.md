@@ -147,6 +147,7 @@ InterOrdra is part of a broader research vision: building tools that make the in
 
 ---
 
-## 📜 License
-
-MIT — Open source, freely usable and extendable.
+📜 License & Trademark
+The code is open source under the MIT License — you can use, study, and modify it freely.
+However: "InterOrdra" is a trademark of Rosibis Piedra. Forks and derivative works must use a different name. Any use of this software requires attribution to the original project.
+See LICENSE for full terms.
