@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterOrdra — Semantic Gap Detection Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #050508;
+    --deep: #0a0a12;
+    --surface: #0e0e1a;
+    --panel: #12121f;
+    --border: rgba(120,120,200,0.12);
+    --border-bright: rgba(120,120,200,0.28);
+    --text: #c8c8e0;
+    --text-dim: #6a6a8a;
+    --text-bright: #e8e8f4;
+    --accent: #7b6fff;
+    --accent2: #ff6b9d;
+    --accent3: #4ecdc4;
+    --accent-glow: rgba(123,111,255,0.15);
+    --gold: #c9a84c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ─── CANVAS BACKGROUND ─── */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.2rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,5,8,0.7);
+    backdrop-filter: blur(20px);
+  }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: var(--text-bright);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    padding: 0.5rem 1.2rem;
+    transition: all 0.3s;
+  }
+
+  .nav-cta:hover {
+    background: var(--accent);
+    color: var(--void);
+  }
+
+  /* ─── SECTIONS WRAPPER ─── */
+  main { position: relative; z-index: 1; }
+
+  section {
+    position: relative;
+    padding: 7rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  section.full-width {
+    max-width: none;
+    padding: 7rem 0;
+  }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 10rem;
+    max-width: none;
+    padding-left: 8rem;
+    padding-right: 8rem;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 8vw, 9rem);
+    font-weight: 300;
+    line-height: 0.95;
+    color: var(--text-bright);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--text-dim);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 3.5rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.7s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.9s forwards;
+  }
+
+  .btn-primary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--void);
+    text-decoration: none;
+    padding: 1rem 2.2rem;
+    display: inline-block;
+    transition: all 0.3s;
+    font-weight: 700;
+  }
+
+  .btn-primary:hover {
+    background: #9b8fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(123,111,255,0.3);
+  }
+
+  .btn-ghost {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 1rem 2.2rem;
+    border: 1px solid var(--border-bright);
+    display: inline-block;
+    transition: all 0.3s;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text-bright);
+    border-color: var(--text-dim);
+  }
+
+  .hero-bands {
+    position: absolute;
+    right: 6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    opacity: 0;
+    animation: fadeIn 1.5s ease 1.2s forwards;
+  }
+
+  .band-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .band-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    width: 1rem;
+    text-align: right;
+  }
+
+  .band-bar {
+    height: 2px;
+    background: var(--border);
+    transition: all 0.5s;
+  }
+
+  .band-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .band-item.active .band-bar { background: var(--accent); }
+  .band-item.active .band-number,
+  .band-item.active .band-label { color: var(--accent); }
+
+  .band-item.meta .band-bar { background: var(--accent2); }
+  .band-item.meta .band-number,
+  .band-item.meta .band-label { color: var(--accent2); }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+    margin: 0;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.2rem, 4vw, 3.8rem);
+    font-weight: 300;
+    color: var(--text-bright);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title em { font-style: italic; color: var(--accent); }
+
+  .section-body {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+    max-width: 680px;
+  }
+
+  /* ─── PHILOSOPHY ─── */
+  #philosophy {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .philosophy-visual {
+    position: relative;
+    height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .topology-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    animation: rotate linear infinite;
+  }
+
+  .ring-1 {
+    width: 300px; height: 300px;
+    border-color: rgba(123,111,255,0.2);
+    animation-duration: 30s;
+  }
+  .ring-2 {
+    width: 220px; height: 220px;
+    border-color: rgba(123,111,255,0.15);
+    animation-duration: 20s;
+    animation-direction: reverse;
+  }
+  .ring-3 {
+    width: 140px; height: 140px;
+    border-color: rgba(255,107,157,0.2);
+    animation-duration: 15s;
+  }
+
+  .ring-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .ring-core {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(123,111,255,0.4), transparent);
+    border: 1px solid rgba(123,111,255,0.5);
+    position: relative;
+    z-index: 2;
+  }
+
+  .philosophy-quotes {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 2.5rem;
+  }
+
+  .philosophy-quote {
+    border-left: 2px solid var(--accent);
+    padding-left: 1.5rem;
+  }
+
+  .philosophy-quote p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ─── ALIGNMENT SECTION ─── */
+  #alignment {
+    background: linear-gradient(180deg, transparent, rgba(123,111,255,0.03), transparent);
+  }
+
+  .alignment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 4rem;
+    border: 1px solid var(--border);
+  }
+
+  .align-card {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+    transition: background 0.3s;
+  }
+
+  .align-card:last-child { border-right: none; }
+  .align-card:hover { background: var(--panel); }
+
+  .align-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+
+  .align-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+  }
+
+  .align-body {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--text-dim);
+  }
+
+  .alignment-thesis {
+    margin-top: 4rem;
+    padding: 3rem;
+    border: 1px solid var(--border-bright);
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alignment-thesis::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, var(--accent), var(--accent2));
+  }
+
+  .thesis-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--text-bright);
+    line-height: 1.6;
+    padding-left: 2rem;
+  }
+
+  /* ─── GALLERY / HOW IT WORKS ─── */
+  #gallery {
+    max-width: none;
+    padding: 7rem 4rem;
+  }
+
+  .gallery-inner { max-width: 1200px; margin: 0 auto; }
+
+  .gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .gallery-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .gallery-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .gallery-img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: var(--deep);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gallery-img-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .scatter-preview {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .gallery-info {
+    padding: 1.5rem;
+  }
+
+  .gallery-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .gallery-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.4rem;
+  }
+
+  .gallery-desc {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ─── PIPELINE ─── */
+  #pipeline {
+    background: var(--surface);
+    max-width: none;
+    padding: 7rem 4rem;
+  }
+
+  .pipeline-inner { max-width: 1200px; margin: 0 auto; }
+
+  .pipeline-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-top: 4rem;
+    position: relative;
+  }
+
+  .pipeline-steps::before {
+    content: '';
+    position: absolute;
+    top: 2.5rem;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3), var(--accent));
+    opacity: 0.3;
+  }
+
+  .pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 1rem;
+    position: relative;
+  }
+
+  .step-num {
+    width: 5rem; height: 5rem;
+    border-radius: 50%;
+    background: var(--deep);
+    border: 1px solid var(--border-bright);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s;
+  }
+
+  .pipeline-step:hover .step-num {
+    background: var(--accent);
+    color: var(--void);
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(123,111,255,0.4);
+  }
+
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .step-body {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ─── PAPERS / READING LIST ─── */
+  #papers {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 7rem 4rem;
+  }
+
+  .papers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+  }
+
+  .paper-card {
+    border: 1px solid var(--border);
+    padding: 2rem;
+    background: var(--surface);
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .paper-card::after {
+    content: '→';
+    position: absolute;
+    right: 2rem;
+    bottom: 2rem;
+    color: var(--accent);
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .paper-card:hover {
+    border-color: var(--border-bright);
+    background: var(--panel);
+  }
+
+  .paper-card:hover::after { opacity: 1; }
+
+  .paper-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .paper-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    background: rgba(123,111,255,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(123,111,255,0.2);
+  }
+
+  .paper-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    padding: 0.3rem 0;
+  }
+
+  .paper-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .paper-authors {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+    font-style: italic;
+  }
+
+  .paper-abstract {
+    font-size: 0.83rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .papers-note {
+    margin-top: 2rem;
+    padding: 1.5rem 2rem;
+    border: 1px dashed var(--border-bright);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  /* ─── BLOG ─── */
+  #blog {
+    background: linear-gradient(180deg, transparent, rgba(123,111,255,0.04), transparent);
+    max-width: none;
+    padding: 7rem 4rem;
+  }
+
+  .blog-inner { max-width: 1200px; margin: 0 auto; }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+  }
+
+  .blog-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .blog-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-3px);
+  }
+
+  .blog-card.featured {
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blog-img {
+    aspect-ratio: 16/9;
+    background: var(--deep);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .blog-img-inner {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+  }
+
+  .blog-content { padding: 1.5rem; flex: 1; }
+
+  .blog-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+
+  .blog-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--text-bright);
+    line-height: 1.4;
+    margin-bottom: 0.7rem;
+  }
+
+  .blog-card.featured .blog-title { font-size: 1.5rem; }
+
+  .blog-excerpt {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  .blog-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.6rem;
+  }
+
+  /* ─── MULTI-AGENT ─── */
+  #multiagent {
+    max-width: 1200px; margin: 0 auto; padding: 7rem 4rem;
+  }
+
+  .agent-diagram {
+    margin-top: 4rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agent-diagram::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(123,111,255,0.06) 0%, transparent 70%);
+  }
+
+  .agent-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .agent-node {
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--border-bright);
+    background: var(--deep);
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .agent-node-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  .agent-node-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-bright);
+  }
+
+  .agent-node.gap-detected {
+    border-color: var(--accent2);
+    background: rgba(255,107,157,0.05);
+  }
+
+  .agent-node.interordra {
+    border-color: var(--accent);
+    background: rgba(123,111,255,0.08);
+  }
+
+  .agent-arrow {
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .agent-arrow span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .agent-insight {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .insight-block {
+    padding: 1.5rem;
+    border-left: 2px solid var(--border-bright);
+    padding-left: 1.5rem;
+  }
+
+  .insight-block.accent { border-left-color: var(--accent); }
+  .insight-block.accent2 { border-left-color: var(--accent2); }
+
+  .insight-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.6rem;
+  }
+
+  .insight-body {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ─── JOURNEY ─── */
+  #journey {
+    background: var(--surface);
+    max-width: none;
+    padding: 7rem 4rem;
+  }
+
+  .journey-inner { max-width: 1200px; margin: 0 auto; }
+
+  .journey-timeline {
+    margin-top: 4rem;
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .journey-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2), transparent);
+  }
+
+  .timeline-item {
+    padding: 0 0 3rem 3rem;
+    position: relative;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -4px;
+    top: 6px;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+
+  .timeline-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .timeline-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-body {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  .timeline-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  /* ─── ABOUT ─── */
+  #about {
+    max-width: 1200px; margin: 0 auto; padding: 7rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  .about-portrait {
+    aspect-ratio: 3/4;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .about-portrait::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center bottom, rgba(123,111,255,0.15), transparent 70%);
+  }
+
+  .portrait-initials {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 6rem;
+    font-weight: 300;
+    color: rgba(123,111,255,0.3);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.1em;
+  }
+
+  .portrait-caption {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    right: 1.5rem;
+  }
+
+  .portrait-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--text-bright);
+    display: block;
+  }
+
+  .portrait-role {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .about-bio p {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--text-dim);
+    margin-bottom: 1.2rem;
+  }
+
+  .about-bio p:first-of-type {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .about-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .about-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.2rem;
+    transition: all 0.3s;
+  }
+
+  .about-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ─── CTA FOOTER ─── */
+  #cta {
+    max-width: none;
+    padding: 0;
+    text-align: center;
+  }
+
+  .cta-inner {
+    padding: 8rem 4rem;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(123,111,255,0.1) 0%, transparent 60%);
+  }
+
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 300;
+    color: var(--text-bright);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  .cta-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 2rem 4rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+  }
+
+  .footer-logo span { color: var(--accent); }
+
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--accent); }
+    50% { opacity: 0.4; box-shadow: 0 0 4px var(--accent); }
+  }
+
+  .ring-dot { animation: pulse-dot 2s ease infinite; }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── UTILITY ─── */
+  .mt-2 { margin-top: 2rem; }
+  .mt-4 { margin-top: 4rem; }
+  .text-accent { color: var(--accent); }
+  .text-bright { color: var(--text-bright); }
+</style>
+</head>
+<body>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Inter<span>Ordra</span></a>
+  <ul class="nav-links">
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#alignment">Alignment</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#papers">Papers</a></li>
+    <li><a href="#blog">Updates</a></li>
+    <li><a href="#journey">Journey</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <a href="https://interordra.streamlit.app" target="_blank" class="nav-cta">Launch Tool →</a>
+</nav>
+
+<!-- HERO -->
+<main>
+<section id="hero">
+  <span class="hero-eyebrow">Semantic Gap Detection Framework</span>
+  <h1 class="hero-title">Making the<br><em>invisible</em><br>visible.</h1>
+  <p class="hero-subtitle">When systems believe they understand each other — and don't. InterOrdra detects the topological structure of that gap.</p>
+  <div class="hero-actions">
+    <a href="https://interordra.streamlit.app" target="_blank" class="btn-primary">Try InterOrdra</a>
+    <a href="#philosophy" class="btn-ghost">Explore the Framework</a>
+  </div>
+
+  <!-- Band spectrum -->
+  <div class="hero-bands">
+    <div class="band-item">
+      <span class="band-number">1</span>
+      <div class="band-bar" style="width:24px"></div>
+      <span class="band-label">Molecular</span>
+    </div>
+    <div class="band-item">
+      <span class="band-number">2</span>
+      <div class="band-bar" style="width:28px"></div>
+      <span class="band-label">Electromagnetic</span>
+    </div>
+    <div class="band-item">
+      <span class="band-number">3</span>
+      <div class="band-bar" style="width:20px"></div>
+      <span class="band-label">Thermal</span>
+    </div>
+    <div class="band-item">
+      <span class="band-number">4</span>
+      <div class="band-bar" style="width:36px"></div>
+      <span class="band-label">Acoustic</span>
+    </div>
+    <div class="band-item">
+      <span class="band-number">5</span>
+      <div class="band-bar" style="width:30px"></div>
+      <span class="band-label">Optical</span>
+    </div>
+    <div class="band-item">
+      <span class="band-number">6</span>
+      <div class="band-bar" style="width:22px"></div>
+      <span class="band-label">Gestural</span>
+    </div>
+    <div class="band-item active">
+      <span class="band-number">7</span>
+      <div class="band-bar" style="width:60px"></div>
+      <span class="band-label">Topological ← InterOrdra</span>
+    </div>
+    <div class="band-item meta">
+      <span class="band-number">8</span>
+      <div class="band-bar" style="width:80px"></div>
+      <span class="band-label">Coincidence Detection</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy">
+  <div>
+    <span class="section-tag reveal">Framework Philosophy</span>
+    <h2 class="section-title reveal">Language is not<br>a human <em>monopoly.</em></h2>
+    <p class="section-body reveal">It is a narrow band within a vast spectrum of coordinated pattern transmission. InterOrdra makes the structure of miscommunication visible — not by analyzing words, but by detecting topological divergence in latent semantic space.</p>
+
+    <div class="philosophy-quotes reveal">
+      <div class="philosophy-quote">
+        <p>"The gap between systems is not void — it is creative space where meta-patterns emerge."</p>
+      </div>
+      <div class="philosophy-quote">
+        <p>"Alignment failures in multi-agent AI systems are fundamentally semantic, not technical."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="philosophy-visual reveal">
+    <div class="topology-ring ring-1">
+      <div class="ring-dot" style="position:absolute;top:-3px;left:50%;transform:translateX(-50%)"></div>
+    </div>
+    <div class="topology-ring ring-2">
+      <div class="ring-dot" style="position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);background:var(--accent2);box-shadow:0 0 12px var(--accent2)"></div>
+    </div>
+    <div class="topology-ring ring-3">
+      <div class="ring-dot" style="position:absolute;top:50%;right:-3px;transform:translateY(-50%);background:var(--accent3);box-shadow:0 0 12px var(--accent3)"></div>
+    </div>
+    <div class="ring-core"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ALIGNMENT & AI SAFETY -->
+<section id="alignment" class="full-width" style="max-width:none;padding:7rem 4rem;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <span class="section-tag reveal">Why It Matters</span>
+    <h2 class="section-title reveal">The case for<br><em>latent-space auditing</em><br>as alignment infrastructure.</h2>
+    <p class="section-body reveal">When AI agents communicate with each other — or with humans — they assume shared meaning that may not exist. This invisible divergence is the root of emergent misalignment. InterOrdra proposes a new layer of infrastructure: semantic auditing before failures become irreversible.</p>
+
+    <div class="alignment-grid mt-4 reveal">
+      <div class="align-card">
+        <span class="align-icon">◈</span>
+        <h3 class="align-title">The Semantic Drift Problem</h3>
+        <p class="align-body">As agents in a pipeline process and relay information, concepts shift. What Agent 1 means by "safe" may differ structurally from what Agent 3 understands. This drift is invisible without topological analysis.</p>
+      </div>
+      <div class="align-card">
+        <span class="align-icon">⬡</span>
+        <h3 class="align-title">Beyond Token-Level Alignment</h3>
+        <p class="align-body">Current alignment techniques operate at the token or behavior level. InterOrdra operates at the structural level — comparing the geometric relationships between concepts, not just their surface forms.</p>
+      </div>
+      <div class="align-card">
+        <span class="align-icon">◎</span>
+        <h3 class="align-title">The Mirror Protocol</h3>
+        <p class="align-body">A five-step alignment process developed through InterOrdra's framework: detect divergence → pause transmission → reframe concepts → negotiate shared structure → act with verified coherence.</p>
+      </div>
+    </div>
+
+    <div class="alignment-thesis reveal">
+      <p class="thesis-text">"Semantic gaps are not communication failures. They are structural properties of the space between systems — measurable, mappable, and bridgeable with the right instruments."</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GALLERY — InterOrdra Visualizations -->
+<section id="gallery" class="full-width">
+  <div class="gallery-inner">
+    <div class="gallery-header">
+      <div>
+        <span class="section-tag reveal">Visual Evidence</span>
+        <h2 class="section-title reveal">InterOrdra in <em>action.</em></h2>
+      </div>
+      <a href="https://interordra.streamlit.app" target="_blank" class="btn-ghost reveal">Open Live Tool →</a>
+    </div>
+
+    <div class="gallery-grid reveal">
+      <div class="gallery-card">
+        <div class="gallery-img">
+          <!-- SVG mini-visualization -->
+          <svg class="scatter-preview" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#7b6fff" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="200" fill="#0a0a12"/>
+            <circle cx="100" cy="90" r="40" fill="url(#g1)"/>
+            <circle cx="220" cy="110" r="35" fill="url(#g1)"/>
+            <!-- Cluster A dots -->
+            <circle cx="85" cy="80" r="3" fill="#7b6fff" opacity="0.9"/>
+            <circle cx="100" cy="75" r="2.5" fill="#7b6fff" opacity="0.8"/>
+            <circle cx="115" cy="85" r="3" fill="#7b6fff" opacity="0.7"/>
+            <circle cx="90" cy="100" r="2" fill="#7b6fff" opacity="0.8"/>
+            <circle cx="108" cy="98" r="2.5" fill="#7b6fff" opacity="0.9"/>
+            <!-- Cluster B dots -->
+            <circle cx="205" cy="100" r="3" fill="#ff6b9d" opacity="0.9"/>
+            <circle cx="225" cy="95" r="2.5" fill="#ff6b9d" opacity="0.8"/>
+            <circle cx="235" cy="112" r="3" fill="#ff6b9d" opacity="0.7"/>
+            <circle cx="215" cy="120" r="2" fill="#ff6b9d" opacity="0.8"/>
+            <!-- Gap line -->
+            <line x1="130" y1="90" x2="195" y2="105" stroke="#4ecdc4" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+            <text x="155" y="88" font-family="monospace" font-size="8" fill="#4ecdc4" opacity="0.7" text-anchor="middle">gap: 0.78</text>
+            <!-- Labels -->
+            <text x="92" y="130" font-family="monospace" font-size="7" fill="#7b6fff" opacity="0.7">Text A</text>
+            <text x="215" y="140" font-family="monospace" font-size="7" fill="#ff6b9d" opacity="0.7">Text B</text>
+          </svg>
+        </div>
+        <div class="gallery-info">
+          <span class="gallery-tag">3D Visualization</span>
+          <h3 class="gallery-title">Semantic Space Clustering</h3>
+          <p class="gallery-desc">Concepts from two texts mapped in 3D latent space. Clusters reveal structural divergence invisible to surface-level analysis.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card">
+        <div class="gallery-img">
+          <svg class="scatter-preview" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="320" height="200" fill="#0a0a12"/>
+            <!-- Matrix grid -->
+            <g opacity="0.8">
+              <rect x="40" y="30" width="240" height="140" fill="none" stroke="#1a1a2e" stroke-width="1"/>
+              <!-- Cells -->
+              <rect x="40" y="30" width="48" height="28" fill="rgba(123,111,255,0.7)"/>
+              <rect x="88" y="30" width="48" height="28" fill="rgba(123,111,255,0.3)"/>
+              <rect x="136" y="30" width="48" height="28" fill="rgba(123,111,255,0.1)"/>
+              <rect x="184" y="30" width="48" height="28" fill="rgba(255,107,157,0.1)"/>
+              <rect x="232" y="30" width="48" height="28" fill="rgba(255,107,157,0.05)"/>
+
+              <rect x="40" y="58" width="48" height="28" fill="rgba(123,111,255,0.25)"/>
+              <rect x="88" y="58" width="48" height="28" fill="rgba(123,111,255,0.8)"/>
+              <rect x="136" y="58" width="48" height="28" fill="rgba(123,111,255,0.4)"/>
+              <rect x="184" y="58" width="48" height="28" fill="rgba(123,111,255,0.1)"/>
+              <rect x="232" y="58" width="48" height="28" fill="rgba(255,107,157,0.15)"/>
+
+              <rect x="40" y="86" width="48" height="28" fill="rgba(255,107,157,0.05)"/>
+              <rect x="88" y="86" width="48" height="28" fill="rgba(123,111,255,0.15)"/>
+              <rect x="136" y="86" width="48" height="28" fill="rgba(123,111,255,0.9)"/>
+              <rect x="184" y="86" width="48" height="28" fill="rgba(123,111,255,0.2)"/>
+              <rect x="232" y="86" width="48" height="28" fill="rgba(255,107,157,0.1)"/>
+
+              <rect x="40" y="114" width="48" height="28" fill="rgba(255,107,157,0.2)"/>
+              <rect x="88" y="114" width="48" height="28" fill="rgba(255,107,157,0.1)"/>
+              <rect x="136" y="114" width="48" height="28" fill="rgba(255,107,157,0.05)"/>
+              <rect x="184" y="114" width="48" height="28" fill="rgba(78,205,196,0.6)"/>
+              <rect x="232" y="114" width="48" height="28" fill="rgba(78,205,196,0.3)"/>
+
+              <rect x="40" y="142" width="48" height="28" fill="rgba(255,107,157,0.3)"/>
+              <rect x="88" y="142" width="48" height="28" fill="rgba(255,107,157,0.1)"/>
+              <rect x="136" y="142" width="48" height="28" fill="rgba(255,107,157,0.05)"/>
+              <rect x="184" y="142" width="48" height="28" fill="rgba(78,205,196,0.25)"/>
+              <rect x="232" y="142" width="48" height="28" fill="rgba(78,205,196,0.7)"/>
+            </g>
+            <text x="160" y="185" font-family="monospace" font-size="7" fill="#6a6a8a" text-anchor="middle">cosine similarity matrix</text>
+          </svg>
+        </div>
+        <div class="gallery-info">
+          <span class="gallery-tag">Similarity Matrix</span>
+          <h3 class="gallery-title">Cosine Distance Map</h3>
+          <p class="gallery-desc">Heatmap of semantic distances between all concept pairs. Dark regions reveal orphaned ideas with no equivalent in the other text.</p>
+        </div>
+      </div>
+
+      <div class="gallery-card">
+        <div class="gallery-img">
+          <svg class="scatter-preview" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="320" height="200" fill="#0a0a12"/>
+            <!-- Gap analysis bars -->
+            <text x="20" y="25" font-family="monospace" font-size="7" fill="#6a6a8a">Global Similarity</text>
+            <rect x="20" y="30" width="200" height="8" rx="1" fill="#1a1a2e"/>
+            <rect x="20" y="30" width="132" height="8" rx="1" fill="#7b6fff" opacity="0.8"/>
+            <text x="226" y="38" font-family="monospace" font-size="7" fill="#7b6fff">0.66</text>
+
+            <text x="20" y="58" font-family="monospace" font-size="7" fill="#6a6a8a">Orphaned A</text>
+            <rect x="20" y="63" width="200" height="8" rx="1" fill="#1a1a2e"/>
+            <rect x="20" y="63" width="80" height="8" rx="1" fill="#ff6b9d" opacity="0.8"/>
+            <text x="226" y="71" font-family="monospace" font-size="7" fill="#ff6b9d">4 concepts</text>
+
+            <text x="20" y="91" font-family="monospace" font-size="7" fill="#6a6a8a">Orphaned B</text>
+            <rect x="20" y="96" width="200" height="8" rx="1" fill="#1a1a2e"/>
+            <rect x="20" y="96" width="60" height="8" rx="1" fill="#ff6b9d" opacity="0.6"/>
+            <text x="226" y="104" font-family="monospace" font-size="7" fill="#ff6b9d">3 concepts</text>
+
+            <text x="20" y="124" font-family="monospace" font-size="7" fill="#6a6a8a">Vocabulary Bridge</text>
+            <rect x="20" y="129" width="200" height="8" rx="1" fill="#1a1a2e"/>
+            <rect x="20" y="129" width="160" height="8" rx="1" fill="#4ecdc4" opacity="0.7"/>
+            <text x="226" y="137" font-family="monospace" font-size="7" fill="#4ecdc4">0.80</text>
+
+            <!-- Status badge -->
+            <rect x="20" y="155" width="100" height="22" rx="2" fill="rgba(255,107,157,0.1)" stroke="rgba(255,107,157,0.3)" stroke-width="1"/>
+            <text x="70" y="170" font-family="monospace" font-size="8" fill="#ff6b9d" text-anchor="middle">⚠ GAP DETECTED</text>
+          </svg>
+        </div>
+        <div class="gallery-info">
+          <span class="gallery-tag">Gap Analysis</span>
+          <h3 class="gallery-title">Detection Report</h3>
+          <p class="gallery-desc">Quantified gap metrics: global similarity score, orphaned concepts, vocabulary overlap, and actionable recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="pipeline" class="full-width">
+  <div class="pipeline-inner">
+    <span class="section-tag reveal">Methodology</span>
+    <h2 class="section-title reveal">Five steps to see<br>what was <em>always there.</em></h2>
+
+    <div class="pipeline-steps reveal">
+      <div class="pipeline-step">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Embed</h3>
+        <p class="step-body">Sentences encoded as high-dimensional vectors using BERT-based transformers. Meaning becomes geometry.</p>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">02</div>
+        <h3 class="step-title">Cluster</h3>
+        <p class="step-body">DBSCAN finds conceptual clusters without requiring predefined categories. Structure emerges from data.</p>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">03</div>
+        <h3 class="step-title">Compare</h3>
+        <p class="step-body">Cosine similarity matrix maps relationships between all concepts across both texts simultaneously.</p>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">04</div>
+        <h3 class="step-title">Reduce</h3>
+        <p class="step-body">PCA projects the semantic space to 3D — preserving topological structure while enabling human comprehension.</p>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">05</div>
+        <h3 class="step-title">Report</h3>
+        <p class="step-body">Gap types classified, orphaned concepts identified, recommendations generated. Invisible structure made visible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PAPERS & READING LIST -->
+<section id="papers">
+  <span class="section-tag reveal">Theoretical Grounding</span>
+  <h2 class="section-title reveal">Papers &<br><em>related work.</em></h2>
+  <p class="section-body reveal">A curated reading list connecting InterOrdra's empirical approach to the broader landscape of topological semantics, ontology, and alignment research.</p>
+
+  <div class="papers-grid reveal">
+    <div class="paper-card">
+      <div class="paper-meta">
+        <span class="paper-tag">InterOrdra</span>
+        <span class="paper-year">2025</span>
+      </div>
+      <h3 class="paper-title">Semantic Drift in Agent Pipelines: A Case for Latent-Space Auditing as Alignment Infrastructure</h3>
+      <p class="paper-authors">Rosibis Piedra</p>
+      <p class="paper-abstract">Proposes latent-space semantic auditing as a necessary alignment layer for multi-agent AI systems. Introduces the concept of semantic drift and the 8-band communication spectrum framework.</p>
+    </div>
+
+    <div class="paper-card">
+      <div class="paper-meta">
+        <span class="paper-tag">Topology</span>
+        <span class="paper-year">2022</span>
+      </div>
+      <h3 class="paper-title">Topological Contradiction Detection Using Persistent Homology</h3>
+      <p class="paper-authors">Wu et al.</p>
+      <p class="paper-abstract">Demonstrates how topological data analysis, specifically persistent homology, can detect structural contradictions in text that evade traditional NLP methods.</p>
+    </div>
+
+    <div class="paper-card">
+      <div class="paper-meta">
+        <span class="paper-tag">Semantics</span>
+        <span class="paper-year">1993</span>
+      </div>
+      <h3 class="paper-title">Semantic Connectivity in Conceptual Networks</h3>
+      <p class="paper-authors">Carley & Kaufer</p>
+      <p class="paper-abstract">Foundational work on how concepts form structural networks, and how the connectivity patterns of those networks determine communicative reach and knowledge transfer.</p>
+    </div>
+
+    <div class="paper-card">
+      <div class="paper-meta">
+        <span class="paper-tag">Alignment</span>
+        <span class="paper-year">2023</span>
+      </div>
+      <h3 class="paper-title">Emergent Misalignment in Multi-Agent Language Model Systems</h3>
+      <p class="paper-authors">— to be added —</p>
+      <p class="paper-abstract">Examines how semantic divergence accumulates across agent pipelines, producing emergent behaviors that no single agent intended or predicted.</p>
+    </div>
+  </div>
+
+  <div class="papers-note reveal">
+    ◈ This reading list grows as the framework develops. Papers are selected for their relevance to topological semantics, multi-agent alignment, and the mathematical foundations of InterOrdra. Submissions welcome via the contact below.
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- BLOG / UPDATES -->
+<section id="blog" class="full-width">
+  <div class="blog-inner">
+    <span class="section-tag reveal">Field Notes</span>
+    <h2 class="section-title reveal">Updates from<br>the <em>frontier.</em></h2>
+
+    <div class="blog-grid reveal">
+      <div class="blog-card featured">
+        <div class="blog-img">
+          <div class="blog-img-inner" style="background:linear-gradient(135deg,#0a0a12,#12121f);font-size:1rem;font-family:'Space Mono',monospace;color:#7b6fff;letter-spacing:0.1em;flex-direction:column;gap:0.5rem;">
+            <span style="font-size:2.5rem">⊗</span>
+            <span>Band 8 Discovery</span>
+          </div>
+        </div>
+        <div class="blog-content">
+          <span class="blog-date">January 19–20, 2026</span>
+          <h3 class="blog-title">Band 8: When coincidence stops being coincidence</h3>
+          <p class="blog-excerpt">Something happened during an unexpected pause — a forced rest from a meeting that didn't happen. In that gap, the eighth band of the communication spectrum revealed itself. Not as theory, but as lived experience. This is what "Coincidence Detection" means: the meta-awareness layer that asks "how many things had to align for this moment to exist?"</p>
+          <div class="blog-tags">
+            <span class="tag">Framework</span>
+            <span class="tag">Band 8</span>
+            <span class="tag">Consciousness</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card">
+        <div class="blog-img" style="aspect-ratio:16/7">
+          <div class="blog-img-inner" style="background:#0a0a12;font-size:2rem">🌐</div>
+        </div>
+        <div class="blog-content">
+          <span class="blog-date">December 2025</span>
+          <h3 class="blog-title">InterOrdra reaches international readers — organically</h3>
+          <p class="blog-excerpt">Readership from Vietnam, Singapore, Spain. A software consultancy wrote about it without being asked. This is what silent adoption looks like.</p>
+          <div class="blog-tags">
+            <span class="tag">Adoption</span>
+            <span class="tag">Community</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="blog-card">
+        <div class="blog-img" style="aspect-ratio:16/7">
+          <div class="blog-img-inner" style="background:#0a0a12;font-size:2rem">📄</div>
+        </div>
+        <div class="blog-content">
+          <span class="blog-date">December 2025</span>
+          <h3 class="blog-title">Paper published: Latent-Space Auditing as Alignment Infrastructure</h3>
+          <p class="blog-excerpt">Published on Academia.edu with timestamp. The argument: alignment failures are semantic, not technical — and we need infrastructure to detect them before they cascade.</p>
+          <div class="blog-tags">
+            <span class="tag">Paper</span>
+            <span class="tag">Alignment</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MULTI-AGENT & ALIGNMENT -->
+<section id="multiagent">
+  <span class="section-tag reveal">Research Focus</span>
+  <h2 class="section-title reveal">The multi-agent<br><em>gap problem.</em></h2>
+  <p class="section-body reveal">When AI agents collaborate in pipelines, they relay meaning across interfaces designed for efficiency, not coherence verification. InterOrdra proposes that every inter-agent boundary is a potential semantic gap — and that these gaps are auditable.</p>
+
+  <div class="agent-diagram reveal">
+    <div class="agent-row">
+      <div class="agent-node">
+        <span class="agent-node-label">Agent 1</span>
+        <span class="agent-node-name">Planner</span>
+      </div>
+      <div class="agent-arrow">
+        → <span>intent drift?</span>
+      </div>
+      <div class="agent-node gap-detected">
+        <span class="agent-node-label">Agent 2</span>
+        <span class="agent-node-name">Executor</span>
+      </div>
+      <div class="agent-arrow">
+        → <span>context loss?</span>
+      </div>
+      <div class="agent-node gap-detected">
+        <span class="agent-node-label">Agent 3</span>
+        <span class="agent-node-name">Evaluator</span>
+      </div>
+      <div class="agent-arrow">
+        ↑
+      </div>
+      <div class="agent-node interordra">
+        <span class="agent-node-label">InterOrdra</span>
+        <span class="agent-node-name">Auditor</span>
+      </div>
+    </div>
+
+    <div class="agent-insight">
+      <div class="insight-block accent">
+        <h4 class="insight-title">Semantic Drift Detection</h4>
+        <p class="insight-body">Measures topological divergence between what Agent 1 intended and what Agent 3 received. The drift is quantifiable, mappable, and — with the right infrastructure — preventable.</p>
+      </div>
+      <div class="insight-block accent2">
+        <h4 class="insight-title">The Mirror Protocol</h4>
+        <p class="insight-body">Five steps: detect → pause → reframe → negotiate → act. A formal procedure for resolving semantic gaps before they propagate through the system. Currently being formalized mathematically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- JOURNEY IN AI -->
+<section id="journey" class="full-width">
+  <div class="journey-inner">
+    <span class="section-tag reveal">Learning in Public</span>
+    <h2 class="section-title reveal">A journey in<br><em>AI engineering.</em></h2>
+    <p class="section-body reveal">Building InterOrdra while learning — not despite it. Tips, insights, and honest accounts of what it means to construct new frameworks from the inside.</p>
+
+    <div class="journey-timeline reveal">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <span class="timeline-date">December 29, 2025 — 12 hours</span>
+        <h3 class="timeline-title">InterOrdra is born</h3>
+        <p class="timeline-body">From a philosophical conversation about heterologous systems and communication spectra to a deployed tool with 3D visualization. The idea that semantic gaps have geometric structure — and that we can measure them — becomes real code in a single session.</p>
+        <div class="timeline-tags">
+          <span class="tag">Origin</span>
+          <span class="tag">Architecture</span>
+          <span class="tag">DBSCAN</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:var(--accent2);box-shadow:0 0 12px var(--accent2)"></div>
+        <span class="timeline-date">January 2026</span>
+        <h3 class="timeline-title">From Spanish to global: bilingual UI + 60+ users</h3>
+        <p class="timeline-body">Adding English interface, file upload support (PDF, TXT, DOCX), and watching organic international adoption begin. Vietnam. Singapore. A Spanish consultancy writes about it publicly. Lesson: good ideas find their own audience.</p>
+        <div class="timeline-tags">
+          <span class="tag">Deployment</span>
+          <span class="tag">UX</span>
+          <span class="tag">Growth</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:var(--accent3);box-shadow:0 0 12px var(--accent3)"></div>
+        <span class="timeline-date">January 19–20, 2026</span>
+        <h3 class="timeline-title">Band 8: the framework becomes complete</h3>
+        <p class="timeline-body">The eighth communication band reveals itself — not in a lab, but in the gap of an unexpected pause. "Coincidence Detection": the meta-awareness layer. The theoretical framework closes. What remains is formalization.</p>
+        <div class="timeline-tags">
+          <span class="tag">Breakthrough</span>
+          <span class="tag">Band 8</span>
+          <span class="tag">Theory</span>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:var(--gold);box-shadow:0 0 12px var(--gold)"></div>
+        <span class="timeline-date">2026 — In Progress</span>
+        <h3 class="timeline-title">Toward 1.0: confidence scoring, formal paper, API</h3>
+        <p class="timeline-body">The final 2%: quantitative confidence metrics, mathematical formalization of Band 8, comprehensive test suite, and a formal academic paper for the ontology and alignment research communities. InterOrdra as infrastructure, not just tool.</p>
+        <div class="timeline-tags">
+          <span class="tag">Confidence Scoring</span>
+          <span class="tag">Academic Paper</span>
+          <span class="tag">API</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-portrait reveal">
+    <div class="portrait-initials">RP</div>
+    <div class="portrait-caption">
+      <span class="portrait-name">Rosibis Piedra</span>
+      <span class="portrait-role">Creator · AI Software Engineer · Costa Rica</span>
+    </div>
+  </div>
+
+  <div class="about-bio reveal">
+    <p>"I build bridges between systems that don't know they're speaking different languages."</p>
+    <p>AI Software Engineer (Vanderbilt University) and trilingual pattern-finder from Costa Rica. My work starts with a question: why do systems that believe they understand each other — fail? InterOrdra is my answer, built from the ground up while learning, because the best way to understand a framework is to construct it.</p>
+    <p>My thinking moves from natural language toward mathematics — not the reverse. This gives InterOrdra its distinctive character: grounded in how meaning actually works for humans and systems, before it becomes formulas.</p>
+    <p>InterOrdra is part of a larger vision: a resonance spectrometer for all eight bands of communication — from molecular to meta-cognitive. The framework is open, the code is public, and the ideas are offered freely.</p>
+
+    <div class="about-links">
+      <a href="https://github.com/rosibis-piedra/interordra" target="_blank" class="about-link">⌥ GitHub</a>
+      <a href="https://interordra.streamlit.app" target="_blank" class="about-link">◈ Live Tool</a>
+      <a href="#" class="about-link">✦ Academia.edu</a>
+      <a href="#" class="about-link">◎ LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section id="cta" class="full-width">
+  <div class="cta-inner">
+    <h2 class="cta-title reveal">See your gaps.</h2>
+    <p class="cta-sub reveal">InterOrdra is free, open-source, and ready to use.</p>
+    <div class="cta-actions reveal">
+      <a href="https://interordra.streamlit.app" target="_blank" class="btn-primary">Launch InterOrdra →</a>
+      <a href="https://github.com/rosibis-piedra/interordra" target="_blank" class="btn-ghost">View Source</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Inter<span>Ordra</span></span>
+  <span class="footer-copy">© 2026 Rosibis Piedra · MIT License · Costa Rica</span>
+  <ul class="footer-links">
+    <li><a href="https://github.com/rosibis-piedra/interordra" target="_blank">GitHub</a></li>
+    <li><a href="https://interordra.streamlit.app" target="_blank">Live Tool</a></li>
+    <li><a href="#papers">Papers</a></li>
+    <li><a href="#about">Contact</a></li>
+  </ul>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+// ─── PARTICLE CANVAS ───
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+
+let particles = [];
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function createParticles() {
+  particles = [];
+  const count = Math.floor((W * H) / 12000);
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      r: Math.random() * 1.5 + 0.3,
+      alpha: Math.random() * 0.5 + 0.1,
+      color: Math.random() > 0.7 ? '#7b6fff' : Math.random() > 0.5 ? '#ff6b9d' : '#4ecdc4'
+    });
+  }
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Connect nearby particles
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(123,111,255,${0.04 * (1 - dist / 120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.x < 0 || p.x > W) p.vx *= -1;
+    if (p.y < 0 || p.y > H) p.vy *= -1;
+  });
+
+  requestAnimationFrame(drawParticles);
+}
+
+resize();
+createParticles();
+drawParticles();
+window.addEventListener('resize', () => { resize(); createParticles(); });
+
+// ─── SCROLL REVEAL ───
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+reveals.forEach(el => observer.observe(el));
+
+// ─── NAV ACTIVE ───
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 200) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current ? 'var(--accent)' : '';
+  });
+});
+</script>
+</body>
+</html>
